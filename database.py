@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 from urllib.parse import quote
@@ -6,6 +7,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from database_schema import SSLCert
+from host import Host
+from ssl_certificate import SSLCertificate
 
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'config.json')
 Session = sessionmaker()
@@ -36,3 +39,24 @@ class Database(object):
         for cert in certs:
             hostnames.append(cert.domain_name)
         return hostnames
+
+    def update_host_info(self, host: Host):
+        self.session.query(SSLCert).filter(SSLCert.domain_name == host.hostname).update(
+            {
+                'exception': 'N' if host.is_connectable else 'Y',
+                'protocol': host.protocol,
+                'last_update_time': datetime.datetime.now()
+            }
+        )
+        self.session.commit()
+
+    def update_ssl_info(self, ssl: SSLCertificate):
+        self.session.query(SSLCert).filter(SSLCert.domain_name == ssl.hostname).update(
+            {
+                'applied_date': ssl.cert_starts,
+                'expire_date': ssl.cert_expires,
+                'issued_to': ssl.issued_to,
+                'last_update_time': datetime.datetime.now()
+            }
+        )
+        self.session.commit()

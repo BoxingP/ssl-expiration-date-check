@@ -8,19 +8,25 @@ def get_hostnames():
     return host_database.get_hostnames()
 
 
+def update_host_info(host):
+    host_database = Database()
+    host_database.update_host_info(host)
+
+
+def update_ssl_info(ssl):
+    host_database = Database()
+    host_database.update_ssl_info(ssl)
+
+
 def main():
     hostnames = get_hostnames()
     for hostname in hostnames:
         host = Host(hostname)
-        print(host.hostname)
-        print(host.is_connectable)
-        print(host.protocol)
+        update_host_info(host)
 
         if host.protocol == 'HTTPS':
             ssl = SSLCertificate(hostname)
-            print(ssl.cert_starts)
-            print(ssl.cert_expires)
-            print(ssl.issued_to)
+            update_ssl_info(ssl)
 
 
 if __name__ == '__main__':
