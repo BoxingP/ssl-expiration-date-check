@@ -1,21 +1,26 @@
 from database import Database
+from host import Host
 from ssl_certificate import SSLCertificate
 
 
-def get_hosts():
+def get_hostnames():
     host_database = Database()
-    return host_database.get_hosts()
+    return host_database.get_hostnames()
 
 
 def main():
-    hosts = get_hosts()
-    for host in hosts:
-        ssl = SSLCertificate(host)
-        print(ssl.hostname)
-        print(ssl.host_status)
-        print(ssl.cert_starts)
-        print(ssl.cert_expires)
-        print(ssl.cert_remains)
+    hostnames = get_hostnames()
+    for hostname in hostnames:
+        host = Host(hostname)
+        print(host.hostname)
+        print(host.is_connectable)
+        print(host.protocol)
+
+        if host.protocol == 'HTTPS':
+            ssl = SSLCertificate(hostname)
+            print(ssl.cert_starts)
+            print(ssl.cert_expires)
+            print(ssl.issued_to)
 
 
 if __name__ == '__main__':

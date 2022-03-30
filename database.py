@@ -30,9 +30,9 @@ class Database(object):
         db_uri = f'{adapter}://{user}:%s@{host}:{port}/{database}' % quote(password)
         return create_engine(db_uri, echo=False)
 
-    def get_hosts(self):
-        hosts = []
+    def get_hostnames(self):
+        hostnames = []
         certs = self.session.query(SSLCert)
         for cert in certs:
-            hosts.append(cert.domain_name)
-        return hosts
+            hostnames.append(cert.domain_name)
+        return hostnames

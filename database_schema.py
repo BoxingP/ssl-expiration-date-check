@@ -11,3 +11,6 @@ class SSLCert(Base):
     applied_date = Column(Time)
     expire_date = Column(Time)
     last_update_time = Column(Time)
+    protocol = Column(String)
+    exception = Column(String)
+    issued_to = Column(String)
