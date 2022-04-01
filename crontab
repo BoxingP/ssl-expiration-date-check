@@ -1,0 +1,1 @@
+0 10,16 * * 1-5 python /usr/src/ssl_expiry_check/main.py >> /var/log/cron/cron.log 2>&1
