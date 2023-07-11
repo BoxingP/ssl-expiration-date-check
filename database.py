@@ -1,8 +1,7 @@
 import datetime
-import json
-import os
 from urllib.parse import quote
 
+from decouple import config as decouple_config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -10,7 +9,6 @@ from database_schema import SSLCert
 from host import Host
 from ssl_certificate import SSLCertificate
 
-CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'config.json')
 Session = sessionmaker()
 
 
@@ -21,15 +19,12 @@ class Database(object):
         self.session = Session()
 
     def create_engine(self):
-        with open(CONFIG_PATH, 'r', encoding='UTF-8') as file:
-            config = json.load(file)
-        db_config = config['database']
-        adapter = db_config['adapter']
-        host = db_config['host']
-        port = db_config['port']
-        database = db_config['database']
-        user = db_config['user']
-        password = db_config['password']
+        adapter = decouple_config('SSL_DATABASE_ADAPTER')
+        host = decouple_config('SSL_DATABASE_HOST')
+        port = decouple_config('SSL_DATABASE_PORT')
+        database = decouple_config('SSL_DATABASE_DATABASE')
+        user = decouple_config('SSL_DATABASE_USER')
+        password = decouple_config('SSL_DATABASE_PASSWORD')
         db_uri = f'{adapter}://{user}:%s@{host}:{port}/{database}' % quote(password)
         return create_engine(db_uri, echo=False)
 

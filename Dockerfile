@@ -10,7 +10,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 COPY ./requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 COPY ./*.py ./
-COPY ./*.json ./
+COPY ./.env ./.env
 COPY ./crontab ./crontab
 RUN mv ./crontab /etc/cron.d/cron-jobs && sed -i -e 's/\r/\n/g' /etc/cron.d/cron-jobs && chmod 0644 /etc/cron.d/cron-jobs
 COPY ./cron.sh cron.sh
