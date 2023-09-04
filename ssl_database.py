@@ -58,7 +58,7 @@ class SSLDatabase(Database):
             return None
 
     def add_domain_info(self, data):
-        new_ssl_cert = SSLCert(domain_name=data['domain'], project=data['app'],
+        new_ssl_cert = SSLCert(domain_name=data['domain'], project=data['app'], ignore_alert='N',
                                last_update_time=datetime.datetime.now())
         self.session.add(new_ssl_cert)
         self.session.commit()

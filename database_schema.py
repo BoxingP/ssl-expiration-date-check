@@ -15,6 +15,7 @@ class SSLCert(Base):
     protocol = Column(String)
     exception = Column(String)
     issued_to = Column(String)
+    ignore_alert = Column(String(2))
 
 
 class TestCase(Base):
