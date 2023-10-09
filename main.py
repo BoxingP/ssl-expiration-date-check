@@ -1,22 +1,11 @@
+import concurrent.futures
+
+from decouple import config as decouple_config
+
 from case_database import CaseDatabase
 from host import Host
 from ssl_certificate import SSLCertificate
 from ssl_database import SSLDatabase
-
-
-def get_hostnames():
-    host_database = SSLDatabase('ssl')
-    return host_database.get_hostnames()
-
-
-def update_host_info(host):
-    host_database = SSLDatabase('ssl')
-    host_database.update_host_info(host)
-
-
-def update_ssl_info(ssl):
-    host_database = SSLDatabase('ssl')
-    host_database.update_ssl_info(ssl)
 
 
 def add_domains():
@@ -30,16 +19,24 @@ def add_domains():
             ssl_database.add_domain_info(domain)
 
 
+def process_host(hostname, host_database):
+    host = Host(hostname)
+    host_database.update_host_info(host)
+
+    if host.protocol == 'HTTPS':
+        ssl = SSLCertificate(hostname)
+        host_database.update_ssl_info(ssl)
+
+
 def main():
     add_domains()
-    hostnames = get_hostnames()
-    for hostname in hostnames:
-        host = Host(hostname)
-        update_host_info(host)
+    host_database = SSLDatabase('ssl')
+    hostnames = host_database.get_hostnames()
 
-        if host.protocol == 'HTTPS':
-            ssl = SSLCertificate(hostname)
-            update_ssl_info(ssl)
+    max_threads = decouple_config('THREAD_MAX', cast=int)
+    with concurrent.futures.ThreadPoolExecutor(max_threads) as executor:
+        futures = {executor.submit(process_host, hostname, host_database): hostname for hostname in hostnames}
+        concurrent.futures.wait(futures)
 
 
 if __name__ == '__main__':

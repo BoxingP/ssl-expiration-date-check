@@ -1,5 +1,6 @@
 import datetime
 import re
+import threading
 
 from database import Database
 from database_schema import SSLCert
@@ -10,6 +11,7 @@ from ssl_certificate import SSLCertificate
 class SSLDatabase(Database):
     def __init__(self, database_name):
         super(SSLDatabase, self).__init__(database_name)
+        self.lock = threading.Lock()
 
     def get_hostnames(self):
         hostnames = []
@@ -19,25 +21,27 @@ class SSLDatabase(Database):
         return hostnames
 
     def update_host_info(self, host: Host):
-        self.session.query(SSLCert).filter(SSLCert.domain_name == host.hostname).update(
-            {
-                'exception': 'N' if host.is_connectable else 'Y',
-                'protocol': host.protocol,
-                'last_update_time': datetime.datetime.now()
-            }
-        )
-        self.session.commit()
+        with self.lock:
+            self.session.query(SSLCert).filter(SSLCert.domain_name == host.hostname).update(
+                {
+                    'exception': 'N' if host.is_connectable else 'Y',
+                    'protocol': host.protocol,
+                    'last_update_time': datetime.datetime.now()
+                }
+            )
+            self.session.commit()
 
     def update_ssl_info(self, ssl: SSLCertificate):
-        self.session.query(SSLCert).filter(SSLCert.domain_name == ssl.hostname).update(
-            {
-                'applied_date': ssl.cert_starts,
-                'expire_date': ssl.cert_expires,
-                'issued_to': ssl.issued_to,
-                'last_update_time': datetime.datetime.now()
-            }
-        )
-        self.session.commit()
+        with self.lock:
+            self.session.query(SSLCert).filter(SSLCert.domain_name == ssl.hostname).update(
+                {
+                    'applied_date': ssl.cert_starts,
+                    'expire_date': ssl.cert_expires,
+                    'issued_to': ssl.issued_to,
+                    'last_update_time': datetime.datetime.now()
+                }
+            )
+            self.session.commit()
 
     def get_domains(self):
         domains = []
@@ -58,7 +62,8 @@ class SSLDatabase(Database):
             return None
 
     def add_domain_info(self, data):
-        new_ssl_cert = SSLCert(domain_name=data['domain'], project=data['app'], ignore_alert='N',
-                               last_update_time=datetime.datetime.now())
-        self.session.add(new_ssl_cert)
-        self.session.commit()
+        with self.lock:
+            new_ssl_cert = SSLCert(domain_name=data['domain'], project=data['app'], ignore_alert='N',
+                                   last_update_time=datetime.datetime.now())
+            self.session.add(new_ssl_cert)
+            self.session.commit()

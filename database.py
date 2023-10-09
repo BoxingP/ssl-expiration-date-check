@@ -4,14 +4,12 @@ from decouple import config as decouple_config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-Session = sessionmaker()
-
 
 class Database(object):
     def __init__(self, database_name):
         self.database_name = database_name
         engine = self.create_engine()
-        Session.configure(bind=engine)
+        Session = sessionmaker(bind=engine)
         self.session = Session()
 
     def create_engine(self):
